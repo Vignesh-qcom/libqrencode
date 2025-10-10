@@ -423,10 +423,10 @@ static void view(int mode, QRinput *input)
 				default:
 					break;
 				}
-				if(event.type == SDL_QUIT) {
-					loop = 0;
-					flag = 0;
-				}
+			}
+			if(event.type == SDL_QUIT) {
+				loop = 0;
+				flag = 0;
 			}
 			if (event.type == SDL_WINDOWEVENT) {
 				switch (event.window.event) {
@@ -628,6 +628,8 @@ int main(int argc, char **argv)
 	}
 
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+	SDL_StopTextInput();
 
 	if(structured && (argc - optind > 1)) {
 		view_multiText(argv + optind, argc - optind);
