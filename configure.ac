@@ -2,7 +2,7 @@ m4_define([__MAJOR_VERSION], [4])dnl
 m4_define([__MINOR_VERSION], [1])dnl
 m4_define([__MICRO_VERSION], [1])dnl
 m4_define([__VERSION], [__MAJOR_VERSION.__MINOR_VERSION.__MICRO_VERSION])dnl
-AC_INIT(QRencode, __VERSION)
+AC_INIT([QRencode],[__VERSION])
 
 MAJOR_VERSION=__MAJOR_VERSION
 MINOR_VERSION=__MINOR_VERSION
@@ -26,14 +26,16 @@ AM_INIT_AUTOMAKE
 AC_DISABLE_STATIC
 AC_C_CONST
 AC_C_INLINE
-AC_HEADER_STDC
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 AC_CHECK_HEADERS(sys/time.h)
 
 LT_INIT
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
-AC_PROG_LIBTOOL
+LT_INIT
 PKG_PROG_PKG_CONFIG
 
 case "${target}" in
@@ -61,8 +63,7 @@ if test x$ac_cv_lib_pthread_pthread_mutex_init = xyes ; then
 fi
 
 AC_ARG_WITH(png,
-    [AC_HELP_STRING([--without-png],
-                    [disable PNG support])],
+    [AS_HELP_STRING([--without-png],[disable PNG support])],
     [with_png=$withval], [with_png=yes])
 
 dnl --with-tools
