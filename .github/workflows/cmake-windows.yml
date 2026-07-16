@@ -45,7 +45,7 @@ jobs:
           cmake $GITHUB_WORKSPACE \
             -A ${{ matrix.cmake_platform }} \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
+            -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake \
             -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DWITH_TESTS=yes
