@@ -1,6 +1,8 @@
 name: CMake Windows
 
-on: [push, pull_request]
+on:
+  - push
+  - pull_request
 
 env:
   BUILD_TYPE: Release
@@ -9,7 +11,6 @@ jobs:
   build:
     strategy:
       matrix:
-        arch: [x64, arm64]
         include:
           - arch: x64
             vcpkg_triplet: x64-windows
@@ -24,8 +25,9 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     steps:
-      - uses: actions/checkout@v4
-#Vcpkg runner
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Run vcpkg for ${{ matrix.arch }}
         uses: lukka/run-vcpkg@v11
         with:
@@ -33,29 +35,38 @@ jobs:
             getopt:${{ matrix.vcpkg_triplet }}
             libiconv:${{ matrix.vcpkg_triplet }}
             libpng:${{ matrix.vcpkg_triplet }}
+            zlib:${{ matrix.vcpkg_triplet }}
           vcpkgGitCommitId: 'cd61e1e26a038e82d6550a3ebbe0fbbfe7da78e3'
 
+      - name: Show vcpkg environment
+        shell: bash
+        run: |
+          echo "VCPKG_ROOT=$VCPKG_ROOT"
+          "$VCPKG_ROOT/vcpkg" list
+
       - name: Create Build Environment
-        run: cmake -E make_directory ${{runner.workspace}}/build-${{ matrix.arch }}
+        run: cmake -E make_directory ${{ runner.workspace }}/build-${{ matrix.arch }}
 
       - name: Configure CMake for ${{ matrix.arch }}
         shell: bash
-        working-directory: ${{runner.workspace}}/build-${{ matrix.arch }}
+        working-directory: ${{ runner.workspace }}/build-${{ matrix.arch }}
         run: |
-          cmake $GITHUB_WORKSPACE \
+          cmake "$GITHUB_WORKSPACE" \
             -A ${{ matrix.cmake_platform }} \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-            -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake \
+            -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
             -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DWITH_TESTS=yes
 
       - name: Build for ${{ matrix.arch }}
-        working-directory: ${{runner.workspace}}/build-${{ matrix.arch }}
         shell: bash
-        run: cmake --build . --config $BUILD_TYPE
+        working-directory: ${{ runner.workspace }}/build-${{ matrix.arch }}
+        run: |
+          cmake --build . --config $BUILD_TYPE
 
       - name: Test for ${{ matrix.arch }}
-        working-directory: ${{runner.workspace}}/build-${{ matrix.arch }}
         shell: bash
-        run: ctest -C $BUILD_TYPE --output-on-failure
+        working-directory: ${{ runner.workspace }}/build-${{ matrix.arch }}
+        run: |
+          ctest -C $BUILD_TYPE --output-on-failure
