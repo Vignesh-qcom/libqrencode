@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 #Vcpkg runner
       - name: Run vcpkg for ${{ matrix.arch }}
         uses: lukka/run-vcpkg@v11
@@ -33,7 +33,6 @@ jobs:
             getopt:${{ matrix.vcpkg_triplet }}
             libiconv:${{ matrix.vcpkg_triplet }}
             libpng:${{ matrix.vcpkg_triplet }}
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
           vcpkgGitCommitId: '305c06bd4dee21e23dcf142c85c657a993f7aa1a'
 
       - name: Create Build Environment
