@@ -33,7 +33,7 @@ jobs:
             getopt:${{ matrix.vcpkg_triplet }}
             libiconv:${{ matrix.vcpkg_triplet }}
             libpng:${{ matrix.vcpkg_triplet }}
-          vcpkgGitCommitId: 'a400452f634fe49e9f18d388aeb1809dcc642136'
+          vcpkgGitCommitId: 'cd61e1e26a038e82d6550a3ebbe0fbbfe7da78e3'
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{runner.workspace}}/build-${{ matrix.arch }}
