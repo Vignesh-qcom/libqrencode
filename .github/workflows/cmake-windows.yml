@@ -1,8 +1,6 @@
 name: CMake Windows
 
-on:
-  - push
-  - pull_request
+on: [push, pull_request]
 
 env:
   BUILD_TYPE: Release
@@ -11,6 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
+        arch: [x64, arm64]
         include:
           - arch: x64
             vcpkg_triplet: x64-windows
@@ -25,46 +24,38 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Clone vcpkg
-        shell: pwsh
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git
-          cd vcpkg
-          git checkout 305c06bd4dee21e23dcf142c85c657a993f7aa1a
-          .\bootstrap-vcpkg.bat
-
-      - name: Install dependencies
-        shell: pwsh
-        run: |
-          .\vcpkg\vcpkg.exe install `
-            getopt:${{ matrix.vcpkg_triplet }} `
-            libiconv:${{ matrix.vcpkg_triplet }} `
+      - uses: actions/checkout@v4
+#Vcpkg runner
+      - name: Run vcpkg for ${{ matrix.arch }}
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgArguments: >
+            getopt:${{ matrix.vcpkg_triplet }}
+            libiconv:${{ matrix.vcpkg_triplet }}
             libpng:${{ matrix.vcpkg_triplet }}
+          #vcpkgGitCommitId: '305c06bd4dee21e23dcf142c85c657a993f7aa1a'
 
       - name: Create Build Environment
-        run: cmake -E make_directory ${{ runner.workspace }}/build-${{ matrix.arch }}
+        run: cmake -E make_directory ${{runner.workspace}}/build-${{ matrix.arch }}
 
       - name: Configure CMake for ${{ matrix.arch }}
         shell: bash
-        working-directory: ${{ runner.workspace }}/build-${{ matrix.arch }}
+        working-directory: ${{runner.workspace}}/build-${{ matrix.arch }}
         run: |
-          cmake "$GITHUB_WORKSPACE" \
+          cmake $GITHUB_WORKSPACE \
             -A ${{ matrix.cmake_platform }} \
-            -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-            -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
             -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DWITH_TESTS=yes
 
       - name: Build for ${{ matrix.arch }}
+        working-directory: ${{runner.workspace}}/build-${{ matrix.arch }}
         shell: bash
-        working-directory: ${{ runner.workspace }}/build-${{ matrix.arch }}
         run: cmake --build . --config $BUILD_TYPE
 
       - name: Test for ${{ matrix.arch }}
+        working-directory: ${{runner.workspace}}/build-${{ matrix.arch }}
         shell: bash
-        working-directory: ${{ runner.workspace }}/build-${{ matrix.arch }}
         run: ctest -C $BUILD_TYPE --output-on-failure
