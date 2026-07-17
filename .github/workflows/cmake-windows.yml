@@ -17,12 +17,10 @@ jobs:
         include:
           - arch: x64
             vcpkg_triplet: x64-windows
-            cmake_platform: x64
             runner: windows-latest
 
           - arch: arm64
             vcpkg_triplet: arm64-windows
-            cmake_platform: ARM64
             runner: windows-11-arm
 
     runs-on: ${{ matrix.runner }}
@@ -51,11 +49,9 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
         run: |
           cmake "$GITHUB_WORKSPACE" \
-            -A ${{ matrix.cmake_platform }} \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
             -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
             -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DWITH_TESTS=yes
 
       - name: Build for ${{ matrix.arch }}
